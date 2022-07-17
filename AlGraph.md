@@ -3,7 +3,9 @@
 #include<stdlib.h>
 #include<string.h>
 #include<malloc.h>
-
+#include<iostream>
+#include<stack>
+using namespace std;
 
 //有向图结构的定义 
 	typedef struct ArcNode {         //表结点类型定义
@@ -13,6 +15,7 @@
 	
 	typedef struct VNode{				//头结点及其数组类型定义
    		 char data;       	//顶点信息
+   		 int in; //表示入度 
     	 ArcNode *firstarc;      	 //指向第一条弧
     	} VNode,AdjList[20];
     	
@@ -30,6 +33,7 @@ void CreatG(ALGraph &G,char s[],int vn,int an){
 	{
 		G.vertices[i].data=s[i];
 		G.vertices[i].firstarc=NULL;
+		G.vertices[i].in=0;//初始入度为0 
 	}
 	for(int i=0;i<G.arcnum;i++)
 	{
@@ -40,6 +44,7 @@ void CreatG(ALGraph &G,char s[],int vn,int an){
 		p->adjvex = end;
 		p->nextarc = G.vertices[start].firstarc;
 		G.vertices[start].firstarc = p;
+		G.vertices[end].in++;//入度增加 
 	}
 }
 
@@ -113,6 +118,38 @@ void BFS(ALGraph &G){//广度优先遍历
 }
 
 
+void TopologicalSort(ALGraph G){//拓扑排序 
+	ArcNode *p;
+	stack<int> V;
+	int temp;
+	int count=0;//显示输出的边的数目，可以用来判断是否有环
+	for(int i=0;i<G.vexnum;i++)
+	{
+		if(G.vertices[i].in == 0)
+		{
+			V.push(i);//将入度为0的顶点入栈 
+		}
+	 }
+	while(!V.empty()){
+		int top=V.top();
+		V.pop();
+		printf("%d %c; ",top,G.vertices[top].data);
+		count++;
+		p=G.vertices[top].firstarc;
+		while(p!=NULL)
+		{
+			if(--G.vertices[p->adjvex].in==0)//删去某顶点后入度变为0 
+			{
+				V.push(p->adjvex);//进栈 
+			}
+			p=p->nextarc;
+		}
+	}
+	if(count!=G.vexnum){
+		printf("图中有环！");
+	}
+}
+
 int main(){
 	char s[7]="ABCDEF";
 	ALGraph G;
@@ -121,7 +158,9 @@ int main(){
 	scanf("%d",&num);
 	CreatG(G,s,6,num);
 	//DFS(G);
-	BFS(G);
+	//BFS(G);
+	TopologicalSort(G);
 	return 0;
 }
+
 ```
